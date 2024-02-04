@@ -1,0 +1,106 @@
+﻿@page "/"
+@rendermode InteractiveServer 
+<PageTitle>Menu</PageTitle>
+
+<h1 style="text-align:center;">Men&uacute; de Pizzas!</h1>
+<br>
+<br>
+
+@foreach (var pizza in estado.Menu.Pizzas)
+{
+    <div class="row">
+        <div class="col">
+            <strong>@pizza?.Nombre</strong>
+        </div>
+        <div class="col text-right">
+            @($"{pizza.Precio:RD$ 0.00}")
+        </div>
+        <div class="col"></div>
+        <div class="col">
+            <img src="https://images.vexels.com/media/users/3/262561/isolated/lists/d4e8a9986c2b7eb249a5f57b6684615a-comida-comida-pizza.png" alt="@pizza.Picantes" />
+        </div>
+        <div class="col">
+            <button class="btn btn-outline-success" @onclick="@(()=> AñadirACesta(pizza))">Añadir</button>
+        </div>
+    </div>
+}
+
+@if (estado.Cesta.Pedidos.Any())
+{
+    <h2 class="">Tu Orden</h2>
+    @foreach (var (pizza, pos) in estado.Cesta.Pedidos.Select((id, pos) => (estado.Menu.ObtenerPizza(id), pos)))
+    {
+        <div class="row mb-2">
+            <div class="col">
+                <strong>@pizza?.Nombre</strong>
+            </div>
+            <div class="col text-right">
+                @($"{pizza?.Precio:RD$ 0.00}")
+            </div>
+            <div class="col"></div>
+            <div class="col"></div>
+            <div class="col">
+                <button class="btn btn-outline-danger" @onclick="@(() => EliminardeCesta(pos))">Eliminar</button>
+            </div>
+        </div>
+    }
+    <div class="row">
+        <div class="col"></div>
+        <div class="col"><hr /></div>
+        <div class="col"> </div>
+        <div class="col"> </div>
+    </div>
+    <div class="row">
+        <div class="col">Total</div>
+        <div class="col tex-right font-weight-bold"> RD$ @($"{estado.PrecioTotal:0.00}")</div>
+        <div class="col"></div>
+        <div class="col"></div>
+        <div class="col"></div>
+    </div>
+    <br />
+}
+
+<h3>Ingrese los Datos Solicitados</h3>
+<EditForm Model="@estado.Cesta.Clientes" OnValidSubmit="RealizarPedido">
+    <DataAnnotationsValidator />
+    <fieldset>
+        <div class="row mb-2">
+            <label class="col-2" for="nombre">Nombre:</label>
+            <InputText class="form-control col-6" @bind-Value="@estado.Cesta.Clientes.Nombre" />
+            <ValidationMessage For="@(() => estado.Cesta.Clientes.Nombre)" />
+        </div>      
+        <div class="row mb-2">
+            <label class="col-2" for="calle">Calle:</label>
+            <InputText class="form-control col-6" @bind-Value="@estado.Cesta.Clientes.Calle" />
+            <ValidationMessage For="@(() => estado.Cesta.Clientes.Calle)" />
+        </div>
+        <div class="row mb-2">
+            <label class="col-2" for="ciudad">Ciudad:</label>
+            <InputText class="form-control col-6" @bind-Value="@estado.Cesta.Clientes.Ciudad" />
+            <ValidationMessage For="@(() => estado.Cesta.Clientes.Ciudad)" />
+        </div>
+        <div class="row mb-2">
+            <button class="btn btn-outline-success" @onclick="RealizarPedido">Realizar Pedido</button>
+        </div>
+    </fieldset>
+</EditForm>
+
+@code {
+    private Estado estado { get; } = new Estado();
+    protected override void OnInitialized()
+    {
+        estado.Menu.Add(
+            new Pizzas(1, "Pepperoni", 700M, Picantes.Picante));
+        estado.Menu.Add(
+            new Pizzas(2, "Hawaiana", 500M, Picantes.Nada));
+        estado.Menu.Add(
+            new Pizzas(3, "La Insoportable", 1000M, Picantes.Muy_Picante));
+    }
+    private string PicantesImagen(Picantes picantes) => $"{picantes.ToString().ToLower()}.png";
+    private void AñadirACesta(Pizzas pizza) => estado.Cesta.Add(pizza.Id);
+    private void EliminardeCesta(int pos) => estado.Cesta.EliminarEn(pos);
+    private void RealizarPedido()
+    {
+        Console.WriteLine("Pedido Realizado");
+    }
+}
